@@ -30,6 +30,27 @@ function initSockets(server) {
 
     socket.on('typing', ({ chatId, typing }) => { socket.to(chatId).emit('typing', { userId: socket.user?.id, typing }); });
 
+    // message delivery/read events
+    socket.on('message:delivered', async ({ messageId, chatId }) => {
+      try {
+        if (!socket.user?.id) return;
+        const Message = require('../models/Message');
+        const userId = socket.user.id;
+        await Message.findByIdAndUpdate(messageId, { $addToSet: { deliveredTo: userId } });
+        io.to(chatId).emit('message:delivered', { messageId, userId });
+      } catch (err) { console.error('message:delivered handler error', err); }
+    });
+
+    socket.on('message:read', async ({ messageId, chatId }) => {
+      try {
+        if (!socket.user?.id) return;
+        const Message = require('../models/Message');
+        const userId = socket.user.id;
+        await Message.findByIdAndUpdate(messageId, { $addToSet: { readBy: userId } });
+        io.to(chatId).emit('message:read', { messageId, userId });
+      } catch (err) { console.error('message:read handler error', err); }
+    });
+
     socket.on('disconnect', () => {
       if (socket.user?.id) {
         userSocketMap.delete(String(socket.user.id));
