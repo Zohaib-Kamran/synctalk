@@ -39,4 +39,6 @@ function initSockets(server) {
   });
 }
 
-module.exports = { initSockets };
+function getIO() { return io }
+
+module.exports = { initSockets, getIO };

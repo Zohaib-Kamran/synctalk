@@ -8,6 +8,9 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { connectDB } = require('./config/db');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
+const chatRoutes = require('./routes/chats');
+const messageRoutes = require('./routes/messages');
 const { initSockets } = require('./sockets');
 const { errorHandler } = require('./middleware/errorHandler');
 
@@ -32,6 +35,9 @@ app.use(limiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/chats', chatRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Error handler
 app.use(errorHandler);
