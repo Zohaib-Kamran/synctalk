@@ -16,7 +16,10 @@ const sendMessage = async (req, res, next) => {
     chat.lastMessage = msg._id;
     await chat.save();
 
-    const populated = await Message.findById(msg._id).populate('sender', 'name avatar');
+    const populated = await Message.findById(msg._id)
+      .populate('sender', 'name avatar')
+      .populate('deliveredTo', 'name avatar')
+      .populate('readBy', 'name avatar');
 
     const io = getIO();
     if (io) io.to(chatId).emit('message:new', populated);
@@ -32,7 +35,10 @@ const getMessagesForChat = async (req, res, next) => {
     const chat = await Chat.findById(chatId);
     if (!chat) return res.status(404).json({ message: 'Chat not found' });
     if (!chat.members.map(String).includes(String(userId))) return res.status(403).json({ message: 'Not a member of this chat' });
-    const messages = await Message.find({ chat: chatId }).sort({ createdAt: -1 }).limit(50).populate('sender', 'name avatar');
+    const messages = await Message.find({ chat: chatId }).sort({ createdAt: -1 }).limit(50)
+      .populate('sender', 'name avatar')
+      .populate('deliveredTo', 'name avatar')
+      .populate('readBy', 'name avatar');
     res.json({ messages });
   } catch (err) { next(err) }
 }
