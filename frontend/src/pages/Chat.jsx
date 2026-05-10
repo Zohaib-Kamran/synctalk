@@ -6,6 +6,8 @@ import { getMessages, sendMessage } from '../services/messageService'
 import ChatList from '../components/ChatList'
 import MessageItem from '../components/MessageItem'
 import MessageForm from '../components/MessageForm'
+import UserSearch from '../components/UserSearch'
+import { createOneToOne } from '../services/chatService'
 
 export default function ChatPage() {
   const { user, accessToken } = useAuth()
@@ -56,9 +58,23 @@ export default function ChatPage() {
     } catch (err) { console.error(err) }
   }
 
+  const handleCreateWithUser = async (userObj) => {
+    try {
+      const res = await createOneToOne(userObj._id)
+      const chat = res.data.chat
+      // refresh chats and open
+      const list = await getMyChats()
+      setChats(list.data.chats.map(c => ({ ...c, myId: user?.id })))
+      if (chat) openChat(chat)
+    } catch (err) { console.error(err) }
+  }
+
   return (
     <div className="min-h-screen flex bg-slate-900 text-slate-100">
-      <ChatList chats={chats} onSelect={openChat} selectedId={active?._id} />
+      <div className="w-72 flex flex-col">
+        <UserSearch onCreate={handleCreateWithUser} />
+        <ChatList chats={chats} onSelect={openChat} selectedId={active?._id} />
+      </div>
       <main className="flex-1 flex flex-col">
         {active ? (
           <div className="flex-1 flex flex-col">
